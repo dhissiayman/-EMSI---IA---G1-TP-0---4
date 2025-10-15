@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+
+<h:head>
+    <title>TP0 — Mini Chat JSF/CDI</title>
+    <h:outputStylesheet name="css/styles.css"/>
+    <h:outputScript name="js/app.js" target="body"/>
+</h:head>
+
+<h:body>
+    <h:form id="form">
+        <!-- Header -->
+        <div class="header box">
+            <h2>TP0 — Mini Chat (JSF + CDI)</h2>
+            <span class="badge">Jakarta EE 11</span>
+        </div>
+
+        <!-- Choix du rôle -->
+        <div class="box">
+            <h3>Rôle de l’API</h3>
+            <p:selectOneMenu id="role" value="#{chat.role}"
+                             disabled="#{chat.roleChoisi}" style="min-width:260px">
+                <f:selectItem itemLabel="-- choisir --" itemValue="#{null}" noSelectionOption="true"/>
+                <f:selectItem itemLabel="helpful assistant" itemValue="helpful assistant"/>
+                <f:selectItem itemLabel="traducteur français-anglais" itemValue="traducteur français-anglais"/>
+                <f:selectItem itemLabel="guide touristique" itemValue="guide touristique"/>
+                <f:selectItem itemLabel="chiffreur (cryptage)" itemValue="chiffreur"/>
+                <p:ajax listener="#{chat.verrouillerRole}" update="@form"/>
+            </p:selectOneMenu>
+
+            <p:commandButton value="Nouveau chat" action="#{chat.nouveauChat}"
+                             onclick="return confirm('Démarrer un nouveau chat ?');"
+                             styleClass="ui-button-secondary" update="@form"/>
+        </div>
+
+        <!-- Zone principale -->
+        <div class="grid">
+            <!-- Zone Question -->
+            <div class="box">
+                <h3>Question</h3>
+                <h:inputTextarea id="question" styleClass="area" value="#{chat.question}" label="Question"/>
+                <div class="toolbar" style="margin-top:8px">
+                    <p:commandButton value="Envoyer" action="#{chat.envoyer}" update="reponse cle historique @messages"/>
+                    <p:commandButton value="Effacer la dernière" action="#{chat.effacerDerniere}"
+                                     update="reponse cle historique @messages" styleClass="ui-button-warning"/>
+                    <h:commandButton type="button" value="Copier la question"
+                                     onclick="copyToClipboard('form:question')"/>
+                </div>
+            </div>
+
+            <!-- Zone Réponse -->
+            <div class="box">
+                <h3>Réponse</h3>
+                <h:inputTextarea id="reponse" styleClass="area" value="#{chat.reponse}" readonly="true"/>
+                <div class="toolbar" style="margin-top:8px">
+                    <h:commandButton type="button" value="Copier la réponse"
+                                     onclick="copyToClipboard('form:reponse')"/>
+                </div>
+            </div>
+        </div>
+
+        <!-- Zone Clé (visible uniquement pour le rôle chiffreur) -->
+        <h:panelGroup rendered="#{chat.chiffreur}">
+            <div class="box">
+                <h3>Clé (Base64)</h3>
+                <h:inputTextarea id="cle" styleClass="area" value="#{chat.clefBase64}" readonly="true"/>
+                <div class="toolbar" style="margin-top:8px">
+                    <h:commandButton type="button" value="Copier la clé"
+                                     onclick="copyToClipboard('form:cle')"/>
+                </div>
+            </div>
+        </h:panelGroup>
+
+        <!-- Historique -->
+        <div class="box">
+            <h3>Historique</h3>
+            <h:inputTextarea id="historique" styleClass="area" value="#{chat.historique}" readonly="true"/>
+            <div class="toolbar" style="margin-top:8px">
+                <h:commandButton type="button" value="Copier l’historique"
+                                 onclick="copyToClipboard('form:historique')"/>
+            </div>
+        </div>
+
+        <!-- Messages d’erreur / validation -->
+        <h:messages id="messages" globalOnly="true" showSummary="true" showDetail="true"/>
+    </h:form>
+</h:body>
+</html>
