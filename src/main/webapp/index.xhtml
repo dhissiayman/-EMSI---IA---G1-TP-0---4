@@ -13,46 +13,55 @@
 
 <h:body>
     <h:form id="form">
-        <!-- Header -->
+
         <div class="header box">
             <h2>TP0 — Mini Chat (JSF + CDI)</h2>
             <span class="badge">Jakarta EE 11</span>
         </div>
 
-        <!-- Choix du rôle -->
+        <!-- Choix du Ro -->
         <div class="box">
             <h3>Rôle de l’API</h3>
+
             <p:selectOneMenu id="role" value="#{chat.role}"
                              disabled="#{chat.roleChoisi}" style="min-width:260px">
                 <f:selectItem itemLabel="-- choisir --" itemValue="#{null}" noSelectionOption="true"/>
                 <f:selectItem itemLabel="helpful assistant" itemValue="helpful assistant"/>
+
                 <f:selectItem itemLabel="traducteur français-anglais" itemValue="traducteur français-anglais"/>
                 <f:selectItem itemLabel="guide touristique" itemValue="guide touristique"/>
                 <f:selectItem itemLabel="chiffreur (cryptage)" itemValue="chiffreur"/>
                 <p:ajax listener="#{chat.verrouillerRole}" update="@form"/>
             </p:selectOneMenu>
 
+
+
+            <p:message for="role" display="text"/>
+
             <p:commandButton value="Nouveau chat" action="#{chat.nouveauChat}"
                              onclick="return confirm('Démarrer un nouveau chat ?');"
                              styleClass="ui-button-secondary" update="@form"/>
         </div>
 
-        <!-- Zone principale -->
+
         <div class="grid">
-            <!-- Zone Question -->
+            <!-- Question -->
             <div class="box">
                 <h3>Question</h3>
                 <h:inputTextarea id="question" styleClass="area" value="#{chat.question}" label="Question"/>
+
+                <p:message for="question" display="text"/>
+
                 <div class="toolbar" style="margin-top:8px">
-                    <p:commandButton value="Envoyer" action="#{chat.envoyer}" update="reponse cle historique @messages"/>
+                    <p:commandButton value="Envoyer" action="#{chat.envoyer}" update="@form"/>
                     <p:commandButton value="Effacer la dernière" action="#{chat.effacerDerniere}"
-                                     update="reponse cle historique @messages" styleClass="ui-button-warning"/>
+                                     update="@form" styleClass="ui-button-warning"/>
                     <h:commandButton type="button" value="Copier la question"
                                      onclick="copyToClipboard('form:question')"/>
                 </div>
             </div>
 
-            <!-- Zone Réponse -->
+            <!-- Réponse -->
             <div class="box">
                 <h3>Réponse</h3>
                 <h:inputTextarea id="reponse" styleClass="area" value="#{chat.reponse}" readonly="true"/>
@@ -63,7 +72,7 @@
             </div>
         </div>
 
-        <!-- Zone Clé (visible uniquement pour le rôle chiffreur) -->
+        <!-- Clé (visible seulement pour le rôle chiffreur) -->
         <h:panelGroup rendered="#{chat.chiffreur}">
             <div class="box">
                 <h3>Clé (Base64)</h3>
@@ -85,8 +94,15 @@
             </div>
         </div>
 
-        <!-- Messages d’erreur / validation -->
-        <h:messages id="messages" globalOnly="true" showSummary="true" showDetail="true"/>
+        <!-- Messages globaux (sans doublons) -->
+        <p:messages id="messages"
+                    globalOnly="true"
+                    autoUpdate="true"
+                    showSummary="true"
+                    showDetail="false"
+                    redisplay="false"
+                    closable="true"/>
+
     </h:form>
 </h:body>
 </html>
