@@ -1,136 +1,173 @@
 # 🎓 EMSI - IA - G1 | TP 0 - Introduction à Jakarta EE
 
 ## 📘 Description du projet
-Ce projet est une **application Web Jakarta EE** (JSF + CDI) réalisée dans le cadre du **TP 0 : Introduction à Jakarta EE**.  
-Elle a pour but de découvrir les bases de **Jakarta Faces (JSF)** et de **Context and Dependency Injection (CDI)** à travers la création d’une petite application de chat interactif.
+Application Web **Jakarta EE (JSF + CDI)** réalisée pour le **TP 0**.  
+Objectif : prendre en main **Jakarta Faces (JSF)** et **CDI** via une mini-appli de chat avec rôles et historique.
 
-L'application permet :
-- de saisir un message (question),
-- d'obtenir une réponse générée côté serveur,
-- de visualiser l’historique de la conversation,
-- de choisir un **rôle système** (comportement du serveur),
-- et d’expérimenter les portées CDI et le rendu JSF.
-
----
-
-## 🧠 Fonctionnalités principales
-- **Trois rôles prédéfinis :**
-  - `helpful assistant`
-  - `traducteur français-anglais`
-  - `guide touristique`
-- **Rôle supplémentaire personnalisé :**
-  - `chiffreur` 🔐 → chiffre le message utilisateur avec une clé aléatoire (algorithme XOR + Base64).
-  - La **clé de chiffrement** et le **message chiffré** sont affichés et stockés dans l’historique.
-
-- **Interface JSF/PrimeFaces :**
-  - Zones texte pour la question, la réponse et l’historique.
-  - Liste déroulante (`p:selectOneMenu`) pour choisir le rôle.
-  - Boutons :
-    - **Envoyer** (soumet le message),
-    - **Effacer** (vide les zones de texte),
-    - **Nouveau chat** (réinitialise la session et le rôle choisi).
-
-- **Gestion des erreurs :**
-  - Si la question est vide, un message d’erreur JSF s’affiche via `<h:messages>`.
-
-- **Historique des clés :**
-  - Lorsqu’un message est chiffré, la clé est enregistrée dans une liste visible par l’utilisateur.
+L’application permet :
+- de saisir une **question** et l’envoyer au **serveur**,
+- de produire une **réponse** selon un **rôle** choisi,
+- d’afficher un **historique** des échanges (et des clés pour le chiffreur),
+- d’illustrer **CDI** (scopes, beans) et le rendu **JSF/PrimeFaces**.
 
 ---
 
-## ⚙️ Technologies utilisées
-- **Jakarta EE 10+**
-- **JSF (Jakarta Faces)**  
-- **CDI (Context and Dependency Injection)**
-- **PrimeFaces 15 (Jakarta)**
-- **Payara Server**
+## 🧠 Fonctionnalités
+
+### Rôles prédéfinis
+- `helpful assistant` → réponse générique (démonstration).
+- `traducteur français-anglais` → simulation simple côté serveur.
+- `guide touristique` → met la réponse en **MAJUSCULES**.
+
+### Rôles personnalisés
+- `chiffreur (cryptage)` 🔐
+    - Chiffre le texte via **XOR** octet par octet avec une **clé aléatoire** générée côté serveur.
+    - Affiche le **texte chiffré** et la **clé** en **Base64**.
+    - La clé est **conservée dans l’historique**.
+- `ROT13 (chiffrement simple)` 🔄
+    - Applique **ROT13** sur les lettres (réversible : ROT13(ROT13(x)) = x).
+
+### Interface
+- **JSF/PrimeFaces** : `p:selectOneMenu`, `p:messages`, `p:message`, `p:commandButton`.
+- Zones **Question**, **Réponse**, **Historique** (à droite), **Clé** (visible uniquement en mode *chiffreur*).
+- Boutons : **Envoyer**, **Effacer la dernière**, **Nouveau chat** (réinitialise la vue/rôle).
+
+---
+
+## ⚠️ Gestion des erreurs (validation)
+L’app gère les erreurs **de deux façons complémentaires** :
+
+1) **Message global** (bannière)  
+   Affiché via `<p:messages globalOnly="true" autoUpdate="true" ...>` quand une règle générale échoue.
+```java
+FacesContext.getCurrentInstance().addMessage(
+  null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "La question est obligatoire.", null)
+);
+```
+
+2) **Message spécifique au champ**  
+   Affiché sous le composant via `<p:message for="question"/>` ou `<p:message for="role"/>`.
+```java
+FacesContext.getCurrentInstance().addMessage(
+  "form:question", new FacesMessage(FacesMessage.SEVERITY_ERROR, "Veuillez saisir une question.", null)
+);
+```
+
+> Résultat : feedback clair **sous le champ** concerné + **bannière** globale sans doublons.
+
+---
+
+## ⚙️ Pile technique
+- **Jakarta EE 11** (JSF/Faces + CDI)
+- **PrimeFaces 15 (classifier `jakarta`)**
+- **Payara Server 6.x**
 - **Maven**
-- **Java 17**
+- **Java 17+** (le projet peut être compilé en 17 ou 21)
 
 ---
 
-## 📂 Structure du projet
-
+## 📂 Structure
 ```
 src/
- ├── main/
- │   ├── java/
- │   │   └── ma.emsi.dhissiayman.tp0jaka/
- │   │        ├── ChatBean.java        # Backing bean JSF
- │   │        └── EncodingFilter.java  # Filtre UTF-8
- │   │
- │   ├── webapp/
- │   │   ├── index.xhtml               # Page principale JSF
- │   │   ├── resources/
- │   │   │   ├── css/styles.css
- │   │   │   └── js/app.js
- │   │   └── WEB-INF/
- │   │        ├── web.xml              # Configuration du déploiement
- │   │        └── beans.xml            # Activation CDI
- │
- └── pom.xml                           # Dépendances Maven
+ ├─ main/
+ │  ├─ java/
+ │  │   └─ ma/emsi/dhissiayman/tp0jaka/
+ │  │        └─ ChatBean.java           # Backing bean (CDI + ViewScoped)
+ │  ├─ webapp/
+ │  │   ├─ index.xhtml                  # Vue JSF/PrimeFaces
+ │  │   ├─ resources/
+ │  │   │   ├─ css/styles.css
+ │  │   │   └─ js/app.js                # copyToClipboard(...)
+ │  │   └─ WEB-INF/
+ │  │        ├─ web.xml                 # welcome-file index.xhtml
+ │  │        └─ beans.xml               # activation CDI (bean-discovery-mode="annotated")
+ └─ pom.xml
 ```
 
 ---
 
-## 🧩 Configuration et exécution
-1. Cloner le projet :
+## 🚀 Lancer le projet
+
+1. **Cloner**
    ```bash
    git clone https://github.com/dhissiayman/-EMSI---IA---G1-TP-0---4.git
+   cd -EMSI---IA---G1-TP-0---4
    ```
-2. Ouvrir le projet dans **IntelliJ IDEA** (avec support Jakarta EE).
-3. Vérifier les dépendances Maven (`Reload Maven Project` si besoin).
-4. Configurer le **serveur Payara** :
-   - Type : *Payara Server 6.x (Jakarta EE 10+)*
-   - Déploiement : *Exploded WAR*
-   - Page d’accueil : `index.xhtml`
-5. Lancer le projet (Run ou Shift+F10).
+
+2. **Ouvrir dans l’IDE** (IntelliJ IDEA / Eclipse EE)
+    - Recharger **Maven** si demandé.
+
+3. **Configurer Payara 6.x**
+    - Déploiement : **Exploded WAR**
+    - Page d’accueil : `index.xhtml`
+
+4. **Run** (ou Shift+F10) puis accéder à :
+   ```
+   http://localhost:8080/<context-path>/index.xhtml
+   ```
 
 ---
 
-## 💬 Exemple de fonctionnement
-**Entrée utilisateur :**
+## 💬 Exemple
+
+**Entrée**
 ```
-Message : Bonjour !
+Rôle : ROT13
+Question : Bonjour le monde !
+```
+
+**Sortie**
+```
+ROT13: Obawhbe yr zabqr !
+```
+
+**Entrée**
+```
 Rôle : chiffreur
+Question : secret
 ```
 
-**Réponse :**
+**Sortie (exemple)**
 ```
-Message chiffré : AABBCC==
-Clé utilisée : Lkd8j3==
+Rôle: chiffreur
+Texte chiffré (Base64):
+q9cPJg==
+```
+**Clé (Base64)**
+```
+g2yG0A==
 ```
 
-**Historique des clés :**
+Historique :
 ```
-Clé #1 : Lkd8j3==
-Clé #2 : 9aBcD2==
-...
+Q1: secret
+R1: Rôle: chiffreur
+    Texte chiffré (Base64):
+    q9cPJg==
+Clé(Base64): g2yG0A==
 ```
 
 ---
 
-## 🧾 Explication de l’erreur “question vide”
-Lorsque l’utilisateur clique sur “Envoyer” sans texte :
-- JSF appelle la méthode `envoyer()` du bean.
-- Le code vérifie si `question == null || question.isEmpty()`.
-- Si oui → un **FacesMessage** d’erreur est ajouté :
-  ```java
-  FacesContext.getCurrentInstance()
-      .addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Erreur", "Veuillez saisir une question"));
-  ```
-- JSF réaffiche la même page avec ce message d’erreur sous la zone de saisie.
-
----
-
-## 🧑‍💻 Auteur
-**Ayoub Dhissi**  
-📍 EMSI Casablanca  
-TP 0 – Introduction à Jakarta EE  
-Encadrant : **[Nom du professeur]**
+## 🧾 Erreur “question vide” (comportement)
+- Clic sur **Envoyer** sans saisir de question :
+    - `ChatBean.envoyer()` ajoute :
+        - un **message spécifique** → `clientId = "form:question"`
+        - un **message global** → `clientId = null`
+    - `index.xhtml` affiche :
+        - `<p:message for="question"/>` → sous le champ
+        - `<p:messages globalOnly="true"/>` → bannière globale
 
 ---
 
 ## 🏆 Bonus réalisé
-> Implémentation d’un **rôle de chiffreur** qui crypte les messages à l’aide d’une clé aléatoire,  
-> et **conservation d’un historique des clés** utilisées dans la session.
+- Rôle **chiffreur (XOR + Base64)** avec **clé aléatoire** et **historique des clés**.
+- Rôle **ROT13** (chiffrement simple réversible).
+- **Validation** avec messages **globaux** et **spécifiques**.
+
+---
+
+## 🧑‍💻 Auteur
+**DHISSI Ayman**  
+EMSI Casablanca — TP 0 (JSF/CDI)  
+Encadrant : **M. Richard Grin**
