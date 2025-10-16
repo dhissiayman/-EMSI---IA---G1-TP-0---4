@@ -5,55 +5,88 @@
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:p="http://primefaces.org/ui">
 
+<!--
+    TP0 — Mini Chat JSF/CDI
+    Auteur : Ayman Dhissi
+    Description :
+    Cette page JSF permet d’interagir avec le Backing Bean ChatBean.
+    L’utilisateur peut :
+      - Choisir un rôle d’API (assistant, traducteur, chiffreur, rot13…)
+      - Envoyer une question
+      - Recevoir une réponse calculée côté serveur
+      - Voir l’historique des échanges
+      - Visualiser les messages d’erreur et la clé de chiffrement si nécessaire
+-->
+
 <h:head>
     <title>TP0 — Mini Chat JSF/CDI</title>
+
+    <!-- Feuille de style et script JS -->
     <h:outputStylesheet name="css/styles.css"/>
     <h:outputScript name="js/app.js" target="body"/>
 </h:head>
 
 <h:body>
+    <!-- Début du formulaire principal -->
     <h:form id="form">
 
-
+        <!-- En-tête de la page -->
         <div class="header box">
             <h2>TP0 — Mini Chat (JSF + CDI)</h2>
             <span class="badge">Jakarta EE 11</span>
         </div>
 
-
+        <!-- ========================= -->
+        <!--      SECTION : Rôle API   -->
+        <!-- ========================= -->
         <div class="box">
             <h3>Rôle de l’API</h3>
 
+            <!-- Menu déroulant (liste des rôles possibles) -->
             <p:selectOneMenu id="role" value="#{chat.role}"
                              disabled="#{chat.roleChoisi}" style="min-width:260px">
+
+                <!-- Option vide par défaut -->
                 <f:selectItem itemLabel="-- choisir --" itemValue="#{null}" noSelectionOption="true"/>
+
+                <!-- Différents rôles possibles -->
                 <f:selectItem itemLabel="helpful assistant" itemValue="helpful assistant"/>
                 <f:selectItem itemLabel="traducteur français-anglais" itemValue="traducteur français-anglais"/>
                 <f:selectItem itemLabel="guide touristique" itemValue="guide touristique"/>
                 <f:selectItem itemLabel="chiffreur (cryptage)" itemValue="chiffreur"/>
                 <f:selectItem itemLabel="ROT13 (chiffrement simple)" itemValue="rot13"/>
 
-
+                <!-- Actualise le formulaire dès qu’un rôle est choisi -->
                 <p:ajax listener="#{chat.verrouillerRole}" update="@form"/>
             </p:selectOneMenu>
 
+            <!-- Message d’erreur spécifique pour le champ “rôle” -->
             <p:message for="role" display="text"/>
 
+            <!-- Bouton pour recommencer une session de chat -->
             <p:commandButton value="Nouveau chat" action="#{chat.nouveauChat}"
                              onclick="return confirm('Démarrer un nouveau chat ?');"
                              styleClass="ui-button-secondary" update="@form"/>
         </div>
 
-
+        <!-- ========================= -->
+        <!--     ZONE PRINCIPALE       -->
+        <!-- ========================= -->
         <div class="grid">
 
-
+            <!-- ======= Colonne gauche (question, réponse, clé) ======= -->
             <div class="left-column">
+
+                <!-- Zone de saisie de la question -->
                 <div class="box">
                     <h3>Question</h3>
+                    <!-- Champ texte lié à la propriété “question” du bean -->
                     <h:inputTextarea id="question" styleClass="area" value="#{chat.question}" label="Question"/>
+
+                    <!-- Message d’erreur spécifique pour le champ “question” -->
                     <p:message for="question" display="text"/>
 
+                    <!-- Barre d’actions (envoyer, effacer, copier) -->
                     <div class="toolbar" style="margin-top:8px">
                         <p:commandButton value="Envoyer" action="#{chat.envoyer}" update="@form"/>
                         <p:commandButton value="Effacer la dernière" action="#{chat.effacerDerniere}"
@@ -63,6 +96,7 @@
                     </div>
                 </div>
 
+                <!-- Zone d’affichage de la réponse -->
                 <div class="box">
                     <h3>Réponse</h3>
                     <h:inputTextarea id="reponse" styleClass="area" value="#{chat.reponse}" readonly="true"/>
@@ -72,7 +106,7 @@
                     </div>
                 </div>
 
-
+                <!-- Zone clé : affichée seulement si le rôle choisi est “chiffreur” -->
                 <h:panelGroup rendered="#{chat.chiffreur}">
                     <div class="box">
                         <h3>Clé (Base64)</h3>
@@ -85,10 +119,11 @@
                 </h:panelGroup>
             </div>
 
-
+            <!-- ======= Colonne droite (historique) ======= -->
             <div class="right-column">
                 <div class="box">
                     <h3>Historique</h3>
+                    <!-- Zone lecture seule affichant les échanges précédents -->
                     <h:inputTextarea id="historique" styleClass="area" value="#{chat.historique}" readonly="true"/>
                     <div class="toolbar" style="margin-top:8px">
                         <h:commandButton type="button" value="Copier l’historique"
@@ -98,7 +133,10 @@
             </div>
         </div>
 
-
+        <!-- ========================= -->
+        <!--     MESSAGES GLOBAUX     -->
+        <!-- ========================= -->
+        <!-- Affiche les erreurs globales (non liées à un champ précis) -->
         <p:messages id="messages"
                     globalOnly="true"
                     autoUpdate="true"
