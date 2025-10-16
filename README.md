@@ -169,5 +169,5 @@ Clé(Base64): g2yG0A==
 
 ## 🧑‍💻 Auteur
 **DHISSI Ayman**  
-EMSI Casablanca — TP 0 (JSF/CDI)  
-Encadrant : **M. Richard Grin**
+EMSI Casablanca(ROUDANI/MAARIF) — TP 0 (JSF/CDI)  
+Professeur : **M. Richard Grin**
