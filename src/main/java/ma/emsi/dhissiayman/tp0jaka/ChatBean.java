@@ -24,15 +24,14 @@ public class ChatBean implements Serializable {
     private String reponse;
     private String clefBase64;
 
-    // Historique : [question, réponse, clé|null]
     private final List<String[]> historiqueList = new ArrayList<>();
 
-    // Verrouiller le rôle après sélection
+
     public void verrouillerRole() {
         if (role != null && !role.isBlank()) roleChoisi = true;
     }
 
-    // Envoyer la question
+
     public String envoyer() {
         // ----- Validation rôle -----
         if (role == null || role.isBlank()) {
@@ -52,8 +51,13 @@ public class ChatBean implements Serializable {
         String clef = null;
 
         switch (role.toLowerCase()) {
+            case "rot13": {
+                resultat = "ROT13: " + rot13(question);
+                break;
+            }
+
             case "chiffreur": {
-                // Chiffrement XOR + clé aléatoire
+
                 byte[] plain = question.getBytes(StandardCharsets.UTF_8);
                 byte[] key = new byte[plain.length];
                 new SecureRandom().nextBytes(key);
@@ -83,20 +87,20 @@ public class ChatBean implements Serializable {
             }
         }
 
-        // Affectations pour l'UI
+
         this.reponse = resultat;
         this.clefBase64 = clef;
 
-        // Historique (Q, R, Clé)
+
         historiqueList.add(new String[]{question, resultat, clef});
 
-        // Prépare la prochaine saisie
+
         this.question = "";
 
-        return null; // rester sur la même vue
+        return null;
     }
 
-    // Effacer la dernière entrée de l'historique
+
     public String effacerDerniere() {
         if (!historiqueList.isEmpty()) {
             historiqueList.remove(historiqueList.size() - 1);
@@ -112,12 +116,12 @@ public class ChatBean implements Serializable {
         return null;
     }
 
-    // Redémarrer la vue
+
     public String nouveauChat() {
         return "index.xhtml?faces-redirect=true";
     }
 
-    // Rendu de l'historique
+
     public String getHistorique() {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < historiqueList.size(); i++) {
@@ -130,7 +134,7 @@ public class ChatBean implements Serializable {
         return sb.toString();
     }
 
-    // Inversion de casse
+
     private static String inverserCasse(String s) {
         StringBuilder out = new StringBuilder();
         for (char c : s.toCharArray()) {
@@ -140,8 +144,22 @@ public class ChatBean implements Serializable {
         }
         return out.toString();
     }
+    private static String rot13(String s) {
+        StringBuilder sb = new StringBuilder(s.length());
+        for (char c : s.toCharArray()) {
+            if (c >= 'a' && c <= 'z') {
+                sb.append((char) ((c - 'a' + 13) % 26 + 'a'));
+            } else if (c >= 'A' && c <= 'Z') {
+                sb.append((char) ((c - 'A' + 13) % 26 + 'A'));
+            } else {
+                sb.append(c);
+            }
+        }
+        return sb.toString();
+    }
 
-    // Helpers messages d'erreur
+
+
     private void addError(String msg) { // global
         addError(null, msg);
     }
@@ -150,7 +168,7 @@ public class ChatBean implements Serializable {
                 .addMessage(clientId, new FacesMessage(FacesMessage.SEVERITY_ERROR, msg, null));
     }
 
-    // Getters / Setters
+
     public String getRole() { return role; }
     public void setRole(String role) { this.role = role; }
     public boolean isRoleChoisi() { return roleChoisi; }
@@ -162,7 +180,7 @@ public class ChatBean implements Serializable {
     public String getClefBase64() { return clefBase64; }
     public void setClefBase64(String clefBase64) { this.clefBase64 = clefBase64; }
 
-    // Pour l'affichage conditionnel de la zone "Clé (Base64)"
+
     public boolean isChiffreur() { return "chiffreur".equalsIgnoreCase(role); }
     public boolean getChiffreur() { return isChiffreur(); }
 }

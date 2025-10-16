@@ -14,12 +14,13 @@
 <h:body>
     <h:form id="form">
 
+
         <div class="header box">
             <h2>TP0 — Mini Chat (JSF + CDI)</h2>
             <span class="badge">Jakarta EE 11</span>
         </div>
 
-        <!-- Choix du Ro -->
+
         <div class="box">
             <h3>Rôle de l’API</h3>
 
@@ -27,14 +28,14 @@
                              disabled="#{chat.roleChoisi}" style="min-width:260px">
                 <f:selectItem itemLabel="-- choisir --" itemValue="#{null}" noSelectionOption="true"/>
                 <f:selectItem itemLabel="helpful assistant" itemValue="helpful assistant"/>
-
                 <f:selectItem itemLabel="traducteur français-anglais" itemValue="traducteur français-anglais"/>
                 <f:selectItem itemLabel="guide touristique" itemValue="guide touristique"/>
                 <f:selectItem itemLabel="chiffreur (cryptage)" itemValue="chiffreur"/>
+                <f:selectItem itemLabel="ROT13 (chiffrement simple)" itemValue="rot13"/>
+
+
                 <p:ajax listener="#{chat.verrouillerRole}" update="@form"/>
             </p:selectOneMenu>
-
-
 
             <p:message for="role" display="text"/>
 
@@ -45,56 +46,59 @@
 
 
         <div class="grid">
-            <!-- Question -->
-            <div class="box">
-                <h3>Question</h3>
-                <h:inputTextarea id="question" styleClass="area" value="#{chat.question}" label="Question"/>
 
-                <p:message for="question" display="text"/>
 
-                <div class="toolbar" style="margin-top:8px">
-                    <p:commandButton value="Envoyer" action="#{chat.envoyer}" update="@form"/>
-                    <p:commandButton value="Effacer la dernière" action="#{chat.effacerDerniere}"
-                                     update="@form" styleClass="ui-button-warning"/>
-                    <h:commandButton type="button" value="Copier la question"
-                                     onclick="copyToClipboard('form:question')"/>
+            <div class="left-column">
+                <div class="box">
+                    <h3>Question</h3>
+                    <h:inputTextarea id="question" styleClass="area" value="#{chat.question}" label="Question"/>
+                    <p:message for="question" display="text"/>
+
+                    <div class="toolbar" style="margin-top:8px">
+                        <p:commandButton value="Envoyer" action="#{chat.envoyer}" update="@form"/>
+                        <p:commandButton value="Effacer la dernière" action="#{chat.effacerDerniere}"
+                                         update="@form" styleClass="ui-button-warning"/>
+                        <h:commandButton type="button" value="Copier la question"
+                                         onclick="copyToClipboard('form:question')"/>
+                    </div>
                 </div>
+
+                <div class="box">
+                    <h3>Réponse</h3>
+                    <h:inputTextarea id="reponse" styleClass="area" value="#{chat.reponse}" readonly="true"/>
+                    <div class="toolbar" style="margin-top:8px">
+                        <h:commandButton type="button" value="Copier la réponse"
+                                         onclick="copyToClipboard('form:reponse')"/>
+                    </div>
+                </div>
+
+
+                <h:panelGroup rendered="#{chat.chiffreur}">
+                    <div class="box">
+                        <h3>Clé (Base64)</h3>
+                        <h:inputTextarea id="cle" styleClass="area" value="#{chat.clefBase64}" readonly="true"/>
+                        <div class="toolbar" style="margin-top:8px">
+                            <h:commandButton type="button" value="Copier la clé"
+                                             onclick="copyToClipboard('form:cle')"/>
+                        </div>
+                    </div>
+                </h:panelGroup>
             </div>
 
-            <!-- Réponse -->
-            <div class="box">
-                <h3>Réponse</h3>
-                <h:inputTextarea id="reponse" styleClass="area" value="#{chat.reponse}" readonly="true"/>
-                <div class="toolbar" style="margin-top:8px">
-                    <h:commandButton type="button" value="Copier la réponse"
-                                     onclick="copyToClipboard('form:reponse')"/>
+
+            <div class="right-column">
+                <div class="box">
+                    <h3>Historique</h3>
+                    <h:inputTextarea id="historique" styleClass="area" value="#{chat.historique}" readonly="true"/>
+                    <div class="toolbar" style="margin-top:8px">
+                        <h:commandButton type="button" value="Copier l’historique"
+                                         onclick="copyToClipboard('form:historique')"/>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Clé (visible seulement pour le rôle chiffreur) -->
-        <h:panelGroup rendered="#{chat.chiffreur}">
-            <div class="box">
-                <h3>Clé (Base64)</h3>
-                <h:inputTextarea id="cle" styleClass="area" value="#{chat.clefBase64}" readonly="true"/>
-                <div class="toolbar" style="margin-top:8px">
-                    <h:commandButton type="button" value="Copier la clé"
-                                     onclick="copyToClipboard('form:cle')"/>
-                </div>
-            </div>
-        </h:panelGroup>
 
-        <!-- Historique -->
-        <div class="box">
-            <h3>Historique</h3>
-            <h:inputTextarea id="historique" styleClass="area" value="#{chat.historique}" readonly="true"/>
-            <div class="toolbar" style="margin-top:8px">
-                <h:commandButton type="button" value="Copier l’historique"
-                                 onclick="copyToClipboard('form:historique')"/>
-            </div>
-        </div>
-
-        <!-- Messages globaux (sans doublons) -->
         <p:messages id="messages"
                     globalOnly="true"
                     autoUpdate="true"
